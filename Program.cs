@@ -3,15 +3,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using course_learning_tutorial.Repositories;
 using course_learning_tutorial.Services;
-using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
