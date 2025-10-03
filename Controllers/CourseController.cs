@@ -15,43 +15,61 @@ public class CourseController : ControllerBase
         _courseService = courseService;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CourseDto>>> GetAll()
-    {
-        var courses = await _courseService.GetAllCoursesAsync();
-        return Ok(courses);
-    }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CourseDto>> GetById(int id)
+    public async Task<ActionResult<ApiResponseDto<CourseDto>>> GetById(int id)
     {
         var course = await _courseService.GetCourseByIdAsync(id);
         if (course == null)
-            return NotFound();
-        return Ok(course);
+            return NotFound(ApiResponseDto<CourseDto>.ErrorResult($"Course with ID {id} not found"));
+        return Ok(ApiResponseDto<CourseDto>.SuccessResult(course));
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateCourseRequest request, CancellationToken ct)
+    public async Task<ActionResult<ApiResponseDto>> Create([FromBody] CreateCourseRequest request, CancellationToken ct)
     {
-        var id = await _courseService.AddCourseAsync(request, ct);
-        return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        try
+        {
+            await _courseService.AddCourseAsync(request, ct);
+            return Ok(ApiResponseDto.SuccessResult("Course created successfully"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponseDto.ErrorResult(ex.Message));
+        }
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, [FromBody] CourseDto courseDto)
+    public async Task<ActionResult<ApiResponseDto>> Update(int id, [FromBody] CourseDto courseDto)
     {
         if (id != courseDto.Id)
-            return BadRequest();
+            return BadRequest(ApiResponseDto.ErrorResult("Invalid ID"));
 
-        await _courseService.UpdateCourseAsync(courseDto);
-        return NoContent();
+        try
+        {
+            await _courseService.UpdateCourseAsync(courseDto);
+            return Ok(ApiResponseDto.SuccessResult("Course updated successfully"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponseDto.ErrorResult(ex.Message));
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        await _courseService.DeleteCourseAsync(id);
-        return NoContent();
+        if (id <= 0)
+            return BadRequest(ApiResponseDto.ErrorResult("Invalid ID"));
+
+        try
+        {
+            await _courseService.DeleteCourseAsync(id);
+            return Ok(ApiResponseDto.SuccessResult("Course deleted successfully"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponseDto.ErrorResult(ex.Message));
+        }
     }
 }

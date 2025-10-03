@@ -12,7 +12,6 @@ public class CourseService : ICourseService
     private readonly ICourseRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<CourseService> _logger;
-
     public CourseService(ICourseRepository repository, IMapper mapper)
     {
         _repository = repository;
@@ -27,12 +26,17 @@ public class CourseService : ICourseService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<CourseDto>> GetAllCoursesAsync()
+    public async Task<IEnumerable<CourseDto>> GetCoursesAsync(string? authorName = null, CancellationToken ct = default)
     {
-        _logger.LogInformation("Retrieving all courses");
-        var courses = await _repository.GetAllAsync();
+        _logger.LogInformation("Retrieving courses by author name {AuthorName}", authorName);
+
+        var courses = authorName == null
+                ? await _repository.GetAllAsync()
+                : await _repository.GetByAuthorNameAsync(authorName, ct);
+
         var result = _mapper.Map<IEnumerable<CourseDto>>(courses);
-        _logger.LogInformation("Retrieved {Count} courses", result.Count());
+
+        _logger.LogInformation("Retrieved {Count} courses by author {AuthorName}", result.Count(), authorName);
         return result;
     }
 
@@ -49,7 +53,6 @@ public class CourseService : ICourseService
         _logger.LogInformation("Mapped course {CourseId} to DTO", id);
         return dto;
     }
-
     public async Task<int> AddCourseAsync(CreateCourseRequest request, CancellationToken ct = default)
     {
         _logger.LogInformation("Adding course {Name} for author {AuthorId}", request.Name, request.AuthorId);
