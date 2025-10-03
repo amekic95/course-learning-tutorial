@@ -4,6 +4,7 @@ using FluentValidation.AspNetCore;
 using course_learning_tutorial.Repositories;
 using course_learning_tutorial.Services;
 using Microsoft.EntityFrameworkCore;
+using course_learning_tutorial.MinimalApis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 var app = builder.Build();
 
+app.MapCourseEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
